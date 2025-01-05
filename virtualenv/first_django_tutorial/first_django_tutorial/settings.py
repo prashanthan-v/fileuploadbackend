@@ -51,6 +51,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'djangowebapp',
     "graphene_django",
+    'graphene_file_upload',
     'corsheaders'
 ]
 
@@ -74,6 +75,8 @@ CORS_ALLOWED_ORIGINS = [
 
 
 ROOT_URLCONF = 'first_django_tutorial.urls'
+
+CORS_ORIGIN_ALLOW_ALL = True 
 
 TEMPLATES = [
     {

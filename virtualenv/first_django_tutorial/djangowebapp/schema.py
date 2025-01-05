@@ -1,8 +1,14 @@
+import base64
+from django.core.files.base import ContentFile
 from .models import Students
-from .models import File
-import graphene
+
 from graphene_django import DjangoObjectType
-from graphene_file_upload.scalars import Upload
+import graphene
+from graphene_file_upload.scalars import Upload  # Import Upload from graphene-file-upload
+from .models import File
+from graphene import ObjectType, Boolean, String, Field
+
+
 
 
 # defining type in schema by mapping to model
@@ -63,16 +69,77 @@ class DeleteStudents(graphene.Mutation):
 
 
 
+# class SaveFile(graphene.Mutation):
+#     class Arguments:
+#         name =graphene.String(required=True)
+#         file = Upload(required=True)
+#     success = graphene.Boolean()    
+#     file= graphene.Field(Filetype)
+#     def mutate(self, info, file, name):
+#       uploaded_file = File.objects.create(name=name, file=file)
+#       return SaveFile(success=True, file=uploaded_file)
+
+
+# class SaveFile(graphene.Mutation):
+#     class Arguments:
+#         name = graphene.String(required=True)
+#         file = Upload(required=True)  # Expect file as Upload type
+    
+#     success = graphene.Boolean()
+#     file = graphene.Field(Filetype)
+
+#     def mutate(self, info, name, file):
+#         try:
+#             # Save the uploaded file
+#             uploaded_file = File.objects.create(name=name, file=file)
+#             return SaveFile(success=True, file=uploaded_file)
+#         except Exception as e:
+#             print(f"Error: {str(e)}")
+#             return SaveFile(success=False, file=None)
+
+
+# class SaveFile(graphene.Mutation):
+#     class Arguments:
+#         name = graphene.String(required=True)
+#         file = graphene.String(required=True)  # File as a base64-encoded string
+
+#     success = graphene.Boolean()
+#     file = graphene.Field(Filetype)
+
+#     def mutate(self, info, name, file):
+#         try:
+#             # Decode the base64 file string back to binary data
+#             file_data = base64.b64decode(file.split(',')[1])  # Handle potential data URL prefix
+#             content_file = ContentFile(file_data)
+
+#             # Save the file in the database
+#             uploaded_file = File.objects.create(name=name, file=content_file)
+#             return SaveFile(success=True, file=uploaded_file)
+
+#         except Exception as e:
+#             print(f"Error: {str(e)}")
+#             return SaveFile(success=False, file=None)
+    
+
 class SaveFile(graphene.Mutation):
     class Arguments:
-        name =graphene.String(required=True)
-        file = Upload(required=True)
-    success = graphene.Boolean()    
-    file= graphene.Field(Filetype)
-    def mutate(self, info, file, name):
-      uploaded_file = File.objects.create(name=name, file=file)
-      return SaveFile(success=True, file=uploaded_file)
-    
+        name = graphene.String(required=True)
+        file = graphene.String(required=True)  # Base64 string
+
+    success = graphene.Boolean()
+    file = graphene.Field(Filetype)
+
+    def mutate(self, info, name, file):
+        try:
+            # Decode the base64 file string back to binary data
+            file_data = base64.b64decode(file)
+            # Create a new File instance
+            uploaded_file = File.objects.create(name=name, file=file)
+            return SaveFile(success=True, file=uploaded_file)
+        except Exception as e:
+            print(f"Error: {str(e)}")
+            return SaveFile(success=False, file=None)
+
 
 class GetStudents(graphene.ObjectType):
     students = graphene.List(Studenttype)  
